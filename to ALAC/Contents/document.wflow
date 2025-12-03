@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>AMApplicationBuild</key>
+	<string>533</string>
+	<key>AMApplicationVersion</key>
+	<string>2.10</string>
+	<key>AMDocumentVersion</key>
+	<string>2</string>
+	<key>actions</key>
+	<array>
+		<dict>
+			<key>action</key>
+			<dict>
+				<key>AMAccepts</key>
+				<dict>
+					<key>Container</key>
+					<string>List</string>
+					<key>Optional</key>
+					<true/>
+					<key>Types</key>
+					<array>
+						<string>com.apple.cocoa.string</string>
+					</array>
+				</dict>
+				<key>AMActionVersion</key>
+				<string>2.0.3</string>
+				<key>AMApplication</key>
+				<array>
+					<string>自动操作</string>
+				</array>
+				<key>AMParameterProperties</key>
+				<dict>
+					<key>COMMAND_STRING</key>
+					<dict/>
+					<key>CheckedForUserDefaultShell</key>
+					<dict/>
+					<key>inputMethod</key>
+					<dict/>
+					<key>shell</key>
+					<dict/>
+					<key>source</key>
+					<dict/>
+				</dict>
+				<key>AMProvides</key>
+				<dict>
+					<key>Container</key>
+					<string>List</string>
+					<key>Types</key>
+					<array>
+						<string>com.apple.cocoa.string</string>
+					</array>
+				</dict>
+				<key>ActionBundlePath</key>
+				<string>/System/Library/Automator/Run Shell Script.action</string>
+				<key>ActionName</key>
+				<string>运行Shell脚本</string>
+				<key>ActionParameters</key>
+				<dict>
+					<key>COMMAND_STRING</key>
+					<string>#!/bin/zsh
+
+# FFmpeg 的完整路径
+FFMPEG_BIN="/opt/homebrew/bin/ffmpeg"
+SUCCESS_COUNT=0
+FAILURE_COUNT=0
+
+# 遍历 Automator 传入的所有文件参数 ($@)
+for f in "$@"
+do
+    # 检查文件是否存在且是常规文件
+    if [[ -f "$f" ]]; then
+
+        DIR_NAME=$(dirname "$f")
+        BASE_NAME=$(basename "$f")
+        
+        # --- 扩展名移除逻辑 ---
+        # ${BASE_NAME:e}: 获取文件的扩展名 (例如 "flac")
+        # ${BASE_NAME:r}: 获取文件名，移除其扩展名 (例如 "song.flac" -&gt; "song")
+        
+        BASE_NAME_WITHOUT_EXT="${BASE_NAME:r}"
+        
+        # 构造输出文件路径：使用移除扩展名后的基础名，并添加 .m4a
+        OUTPUT_FILE="${DIR_NAME}/${BASE_NAME_WITHOUT_EXT}.m4a"
+        
+        # 使用完整路径调用 FFmpeg
+        # -i "$f": 输入任何格式的文件
+        # -acodec alac: 编码为 ALAC
+        # -map_metadata 0: 复制所有元数据标签 (若源文件包含)
+        # -y: 覆盖输出文件
+        # -vn: 忽略视频流 (例如封面图)
+        
+        "$FFMPEG_BIN" -i "$f" -acodec alac -map_metadata 0 -y -vn "$OUTPUT_FILE"
+        
+        # 检查 FFmpeg 退出状态
+        if [ $? -eq 0 ]; then
+            SUCCESS_COUNT=$((SUCCESS_COUNT + 1))
+        else
+            FAILURE_COUNT=$((FAILURE_COUNT + 1))
+        fi
+    fi
+done
+
+# 计算总处理文件数
+TOTAL_PROCESSED=$((SUCCESS_COUNT + FAILURE_COUNT))
+
+# --- 发送 macOS 通知 ---
+
+# 准备通知信息
+if [ $TOTAL_PROCESSED -eq 0 ]; then
+    TITLE="没有文件被处理"
+    MESSAGE="请确保您选择了有效的文件。"
+elif [ $FAILURE_COUNT -eq 0 ]; then
+    TITLE="✅ 所有文件转换完成"
+    MESSAGE="成功转换 ${SUCCESS_COUNT} 个文件为 ALAC。"
+else
+    TITLE="⚠️ 转换完成，但有错误"
+    MESSAGE="总共处理 ${TOTAL_PROCESSED} 个文件。成功 ${SUCCESS_COUNT} 个，失败 ${FAILURE_COUNT} 个 (可能是非音频文件)。"
+fi
+
+# 使用 osascript 发送通知
+/usr/bin/osascript -e "display notification \"$MESSAGE\" with title \"$TITLE\""
+
+exit 0</string>
+					<key>CheckedForUserDefaultShell</key>
+					<true/>
+					<key>inputMethod</key>
+					<integer>1</integer>
+					<key>shell</key>
+					<string>/bin/zsh</string>
+					<key>source</key>
+					<string></string>
+				</dict>
+				<key>BundleIdentifier</key>
+				<string>com.apple.RunShellScript</string>
+				<key>CFBundleVersion</key>
+				<string>2.0.3</string>
+				<key>CanShowSelectedItemsWhenRun</key>
+				<false/>
+				<key>CanShowWhenRun</key>
+				<true/>
+				<key>Category</key>
+				<array>
+					<string>AMCategoryUtilities</string>
+				</array>
+				<key>Class Name</key>
+				<string>RunShellScriptAction</string>
+				<key>InputUUID</key>
+				<string>C4BF63A8-4BFF-4DDD-BCC7-60A4D081444B</string>
+				<key>Keywords</key>
+				<array>
+					<string>Shell</string>
+					<string>脚本</string>
+					<string>命令</string>
+					<string>运行</string>
+					<string>Unix</string>
+				</array>
+				<key>OutputUUID</key>
+				<string>E7DC86B2-243E-4B48-BEE2-6583101FA0C0</string>
+				<key>UUID</key>
+				<string>B0057E04-14F8-4993-A233-B399C1D2D289</string>
+				<key>UnlocalizedApplications</key>
+				<array>
+					<string>Automator</string>
+				</array>
+				<key>arguments</key>
+				<dict>
+					<key>0</key>
+					<dict>
+						<key>default value</key>
+						<integer>0</integer>
+						<key>name</key>
+						<string>inputMethod</string>
+						<key>required</key>
+						<string>0</string>
+						<key>type</key>
+						<string>0</string>
+						<key>uuid</key>
+						<string>0</string>
+					</dict>
+					<key>1</key>
+					<dict>
+						<key>default value</key>
+						<false/>
+						<key>name</key>
+						<string>CheckedForUserDefaultShell</string>
+						<key>required</key>
+						<string>0</string>
+						<key>type</key>
+						<string>0</string>
+						<key>uuid</key>
+						<string>1</string>
+					</dict>
+					<key>2</key>
+					<dict>
+						<key>default value</key>
+						<string></string>
+						<key>name</key>
+						<string>source</string>
+						<key>required</key>
+						<string>0</string>
+						<key>type</key>
+						<string>0</string>
+						<key>uuid</key>
+						<string>2</string>
+					</dict>
+					<key>3</key>
+					<dict>
+						<key>default value</key>
+						<string></string>
+						<key>name</key>
+						<string>COMMAND_STRING</string>
+						<key>required</key>
+						<string>0</string>
+						<key>type</key>
+						<string>0</string>
+						<key>uuid</key>
+						<string>3</string>
+					</dict>
+					<key>4</key>
+					<dict>
+						<key>default value</key>
+						<string>/bin/sh</string>
+						<key>name</key>
+						<string>shell</string>
+						<key>required</key>
+						<string>0</string>
+						<key>type</key>
+						<string>0</string>
+						<key>uuid</key>
+						<string>4</string>
+					</dict>
+				</dict>
+				<key>isViewVisible</key>
+				<integer>1</integer>
+				<key>location</key>
+				<string>354.000000:305.000000</string>
+				<key>nibPath</key>
+				<string>/System/Library/Automator/Run Shell Script.action/Contents/Resources/Base.lproj/main.nib</string>
+			</dict>
+			<key>isViewVisible</key>
+			<integer>1</integer>
+		</dict>
+	</array>
+	<key>connectors</key>
+	<dict/>
+	<key>workflowMetaData</key>
+	<dict>
+		<key>applicationBundleIDsByPath</key>
+		<dict/>
+		<key>applicationPaths</key>
+		<array/>
+		<key>inputTypeIdentifier</key>
+		<string>com.apple.Automator.fileSystemObject.music</string>
+		<key>outputTypeIdentifier</key>
+		<string>com.apple.Automator.nothing</string>
+		<key>presentationMode</key>
+		<integer>15</integer>
+		<key>processesInput</key>
+		<false/>
+		<key>serviceInputTypeIdentifier</key>
+		<string>com.apple.Automator.fileSystemObject.music</string>
+		<key>serviceOutputTypeIdentifier</key>
+		<string>com.apple.Automator.nothing</string>
+		<key>serviceProcessesInput</key>
+		<false/>
+		<key>systemImageName</key>
+		<string>NSActionTemplate</string>
+		<key>useAutomaticInputType</key>
+		<false/>
+		<key>workflowTypeIdentifier</key>
+		<string>com.apple.Automator.servicesMenu</string>
+	</dict>
+</dict>
+</plist>
