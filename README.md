@@ -1,4 +1,4 @@
-# Some_Script_for_Automator
+# Some Scripts for Automator
 
 一些用于Automator的脚本
 
