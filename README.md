@@ -1,0 +1,2 @@
+# Some_Script_for_Automator
+一些用于Automator的脚本
